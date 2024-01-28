@@ -3,18 +3,13 @@ const DataProcessor = require('./data-processor/data-processor');
 
 async function main() {
   try {
-    const pincode = '242307'; // Replace with the desired pincode
+    const pincode = '242307';
     const scraper = new AmazonScraper(pincode);
-    
-    // Scrape all products from Amazon
-    const scrapedData = await scraper.scrapeAllProducts();
-    console.log("data",scrapedData)
+  const scrapedData = await scraper.scrapeAllProducts();
 
-    // Instantiate the data processor
-    const dataProcessor = new DataProcessor(scrapedData);
-
-    // Process and save the data
-    dataProcessor.save('output.ndjson.gz');
+  const processor = new DataProcessor(scrapedData);
+  console.log(scrapedData)
+  processor.save("output.json.gz");
   } catch (error) {
     console.error('Error:', error);
   }

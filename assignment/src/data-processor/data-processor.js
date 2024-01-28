@@ -5,14 +5,32 @@ class DataProcessor {
   constructor(data) {
     this.data = data;
   }
-
+  discount(sellingPrice,MRP){
+    // Convert the prices to numbers and remove any non-numeric characters
+    const selling = Number(sellingPrice.replace(/[^\d.]/g, ''));
+    const mrp = Number(MRP.replace(/[^\d.]/g, ''));
+ 
+    // Calculate the discount percentage
+    const discountPercentage = ((mrp - selling) / mrp) * 100;
+ 
+    // Round the discount percentage to two decimal places
+    return discountPercentage.toFixed(2);
+  }
   process() {
     const processedData = this.data.map(product => {
-      //  Extracting relevant information
       const processedProduct = {
+        SKUId: product.SKUId,
         productName: product.productName,
-        // discountedPrice: this.calculateDiscountedPrice(product.productPrice, product.discount),
-        // Add more processed fields as needed
+        productTitle: product.productTitle,
+        description: product.description,
+        category: product.category,
+        MRP: product?.MRP?.split('₹')[1].replace(/,/g, ''),
+        sellingPrice: product.sellingPrice.replace(/,/g, ''),
+        discount: this.discount(product.sellingPrice.replace(/,/g, ''),product?.MRP?.split('₹')[1].replace(/,/g, '')),
+        weight: product.weight,
+        brandName: product.brandName,
+        imageUrl: product.imageUrl,
+        laptopSpacification: product.laptopSpacification,
       };
 
       return processedProduct;
@@ -21,18 +39,9 @@ class DataProcessor {
     return processedData;
   }
 
-  // calculateDiscountedPrice(originalPrice, discount) {
-  //   // Example: Calculate discounted price based on the discount percentage
-  //   const discountPercentage = parseFloat(discount.replace('%', ''));
-  //   const discountedPrice = originalPrice * (1 - discountPercentage / 100);
-
-  //   return discountedPrice.toFixed(2); // Round to two decimal places
-  // }
-
   save(outputFile) {
-    // Save the processed data
     const processedData = this.process();
-    const jsonData = JSON.stringify(this.data);
+    const jsonData = JSON.stringify(processedData);
     const gzippedData = zlib.gzipSync(jsonData);
 
     fs.writeFileSync(outputFile, gzippedData);
