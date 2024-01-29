@@ -5,10 +5,10 @@ class DataProcessor {
   constructor(data) {
     this.data = data;
   }
-  discount(sellingPrice,MRP){
+  discount(sellingPrice=1,MRP=1){
     // Convert the prices to numbers and remove any non-numeric characters
     const selling = Number(sellingPrice.replace(/[^\d.]/g, ''));
-    const mrp = Number(MRP.replace(/[^\d.]/g, ''));
+    const mrp = Number(MRP?.replace(/[^\d.]/g, ''));
  
     // Calculate the discount percentage
     const discountPercentage = ((mrp - selling) / mrp) * 100;
@@ -19,14 +19,15 @@ class DataProcessor {
   process() {
     const processedData = this.data.map(product => {
       const processedProduct = {
+        orderTime:product.orderTime,
         SKUId: product.SKUId,
         productName: product.productName,
         productTitle: product.productTitle,
         description: product.description,
         category: product.category,
-        MRP: product?.MRP?.split('₹')[1].replace(/,/g, ''),
-        sellingPrice: product.sellingPrice.replace(/,/g, ''),
-        discount: this.discount(product.sellingPrice.replace(/,/g, ''),product?.MRP?.split('₹')[1].replace(/,/g, '')),
+        MRP: product?.MRP?.split('₹')[1]?.replace(/,/g, ''),
+        sellingPrice: product?.sellingPrice?.replace(/,/g, ''),
+        discount: product.discount,
         weight: product.weight,
         brandName: product.brandName,
         imageUrl: product.imageUrl,

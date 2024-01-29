@@ -2,8 +2,9 @@ const puppeteer = require("puppeteer");
 const cheerio = require("cheerio");
 
 class AmazonScraper {
-  constructor(pincode) {
-    this.pincode = pincode;
+  constructor(currentpageUrl) {
+    this.currentpageUrl = currentpageUrl;
+
   }
 
   async scrapeAmazon() {
@@ -12,10 +13,11 @@ class AmazonScraper {
 
     try {
       // Navigate to Amazon with the specified pincode
-
+       console.log("Move to main page....")
       await page.goto(
-        `https://www.amazon.in/s?k=laptops&pincode=${this.pincode}`
+        `${this.currentpageUrl}`
       );
+      console.log("Get all htmlContent from main page wait for next....")
     } catch (error) {
       console.error("Error navigating to Amazon:", error);
     }
@@ -28,12 +30,14 @@ class AmazonScraper {
     return htmlContent;
   }
 
-  async scrapeProductInfo(productUrl) {
+  async scrapeProductInfo(productUrl,i) {
+   
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
     try {
       // Navigate to the product page
+      console.log("moving to every product url..."+"product-"+i+1)
       await page.goto("https://www.amazon.in" + productUrl, {
         waitUntil: "domcontentloaded",
         timeout: 0,
@@ -100,8 +104,14 @@ class AmazonScraper {
         return extractedprop;
       }
       const properties = extractProperties(extractedData);
+      
+// Extract order time
+const orderTime = $('div#mir-layout-DELIVERY_BLOCK-slot-PRIMARY_DELIVERY_MESSAGE_LARGE').text();
+
 
       const productInfo = {
+       
+        orderTime,
         SKUId: properties["ASIN"],
         productName: $(".a-size-large.product-title-word-break").text().trim(),
         productTitle: $(".a-size-large.product-title-word-break").text().trim(),
@@ -114,6 +124,7 @@ class AmazonScraper {
         brandName: properties["Brand"],
         imageUrl: $("#landingImage").attr("src"),
         laptopSpacification: properties,
+        
       };
 
       await browser.close();
@@ -134,9 +145,9 @@ class AmazonScraper {
 
       // Use Promise.all to scrape product information asynchronously
       const productInfo = await Promise.all(
-        productUrls.map((url) => this.scrapeProductInfo(url))
+        productUrls.map((url,i) => this.scrapeProductInfo(url,i))
       );
-
+          console.log("Product information fetched Wait for next process.....")
       return productInfo.filter((info) => info !== null); // Filter out null values
     } catch (error) {
       console.error("Error scraping all products:", error);
